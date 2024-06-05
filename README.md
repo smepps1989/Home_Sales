@@ -1,7 +1,22 @@
 # Home_Sales
-This module explores a home sales dataset using SparkSQL. Temporary views were created in order to consider various insights regarding the data. This module also compared query performance of SparkSQL when the dataset was partioioned using Parquet and caching a table that initially only existed in temprary form. 
+This module explores a home sales dataset using SparkSQL. Temporary views were created in order to consider various insights regarding the data. This module also compared query performance of SparkSQL when the dataset was partitioned using the parquet methos within SparkSQL and caching a table that initially only existed in temporary form. 
 
-It was discovered that for this particular dataset, the queries ran fastest when automatically partitioned with the parquet method within Spark. When partitioned manually by the "date_built" field, queries did run slower, however, were executed quicker than not being partitioned at all. The requirements of the assignment are as follows:
+The following query was used to track the performance speeds of each method described:
+```
+spark.sql(
+"""
+  SELECT
+    view, 
+    ROUND(AVG(price / view), 2) AS avg_price_per_view
+  FROM sales
+  GROUP BY view
+  HAVING AVG(price) > 350000
+  ORDER BY avg_price_per_view DESC
+"""
+).show()
+```
+It was discovered that for this particular dataset, the query ran fastest when the table was cached. The query executed the slowest when the dataset was partitioned manually by the "date_built" field, even compared to the uncached and not partitioned temporary view. This is likely because the query is grouping by a field other than the partition key, meaning that all partition folders had to be searched in order to aggregate the request.
+
 
 ## Requirements
 A Spark DataFrame is created from the dataset.
